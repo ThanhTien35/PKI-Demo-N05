@@ -3,7 +3,7 @@
 
 **Group N05 – Ton Duc Thang University**
 
-Demo môn học An toàn thông tin, minh họa cơ chế xác thực chứng chỉ số HTTPS thông qua Public Key Infrastructure (PKI) và Chain of Trust.
+Demo môn học Bảo mật thông tin, minh họa cơ chế xác thực chứng chỉ số HTTPS thông qua Public Key Infrastructure (PKI) và Chain of Trust.
 
 ## 1. Giới thiệu
 
