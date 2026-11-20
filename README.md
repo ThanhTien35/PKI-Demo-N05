@@ -51,31 +51,27 @@ Dự án này được xây dựng nhằm minh họa thực tiễn nguyên lý h
 
 ## 2. Kiến trúc & Chuỗi tin cậy (Chain of Trust)
 
-### Mô hình phân cấp chứng chỉ:
+Chuỗi tin cậy trong mô hình PKI được thiết lập theo cấp bậc từ **Root CA** xuống **Server Certificate**:
 
 ```mermaid
-graph TD
-    classDef ca fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#ffffff;
-    classDef server fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff;
-    classDef client fill:#374151,stroke:#9ca3af,stroke-width:2px,color:#ffffff;
+flowchart TD
+    RootCA["Root CA (Trust Anchor)<br/><b>TDTU Group N05 Private Root CA</b><br/><i>(Tự ký • Cài đặt trong Windows Trust Store)</i>"]
+    
+    ServerCert["Leaf Certificate (Máy chủ)<br/><b>CN = localhost</b><br/><i>(SAN: localhost, 127.0.0.1 • Ký bởi Root CA)</i>"]
+    
+    Browser["Trình duyệt Client<br/><b>Google Chrome / Microsoft Edge</b>"]
 
-    subgraph "Trust Anchor (Hệ điều hành / Trình duyệt)"
-        A["🏛️ Root CA: TDTU Group N05 Private Root CA<br/>(Self-signed | Thời hạn: 10 năm | Lưu trong Trust Store)"]:::ca
-    end
-
-    subgraph "Leaf Certificate (Cấp phát cho dịch vụ)"
-        B["🌐 Server Certificate: localhost<br/>(SAN: localhost, 127.0.0.1 | Ký bởi Root CA)"]:::server
-    end
-
-    subgraph "Client Verification"
-        C["💻 Trình duyệt Web (Chrome / Edge / Firefox)"]:::client
-    end
-
-    A -->|"Dùng Private Key ký số & cấp phát"| B
-    C -->|"1. Yêu cầu kết nối HTTPS"| B
-    B -->|"2. Gửi chứng chỉ máy chủ"| C
-    C -->|"3. Thẩm định chuỗi chữ ký số qua Root CA"| A
+    RootCA -->|"1. Ký số & phát hành chứng chỉ"| ServerCert
+    Browser -->|"2. Kết nối HTTPS (TLS Handshake)"| ServerCert
+    ServerCert -->|"3. Gửi chứng chỉ máy chủ"| Browser
+    Browser -->|"4. Thẩm định chuỗi chữ ký số qua Root CA"| RootCA
 ```
+
+| Cấp bậc | Thực thể | Vai trò kỹ thuật trong hệ thống |
+|:---|:---|:---|
+| **Root CA (Gốc)** | `TDTU Group N05 Private Root CA` | Đóng vai trò là **Trust Anchor** (Điểm tựa tin cậy). Cần được cài vào kho *Trusted Root Certification Authorities* của hệ điều hành. |
+| **Leaf Certificate (Ngọn)** | `localhost` | Chứng chỉ định danh cho HTTPS Server, chứa phần mở rộng **SAN** (`localhost`, `127.0.0.1`) do Root CA ký xác nhận. |
+| **Relying Party (Xác thực)** | Trình duyệt Web (Chrome / Edge) | Tự động kiểm tra chữ ký số trên chứng chỉ máy chủ ngược về Root CA để cấp trạng thái **Ổ khóa xanh an toàn**. |
 
 ---
 
@@ -84,25 +80,26 @@ graph TD
 ```text
 PKI-Demo-N05/
 │
-├── 📄 index.html               # Giao diện chính: Dashboard & Certificate Viewer
-├── 🐍 server.py                # HTTPS Web Server & Certificate API (/api/certificate)
-├── ⚙️ localhost.ext            # Cấu hình X.509 Extensions (KeyUsage, SAN cho localhost)
-├── 📖 README.md                # Tài liệu hướng dẫn chi tiết
+├── index.html                  # Giao diện chính: Dashboard & Certificate Viewer
+├── server.py                   # HTTPS Web Server & Certificate API (/api/certificate)
+├── localhost.ext               # Cấu hình X.509 Extensions (KeyUsage, SAN cho localhost)
+├── README.md                   # Tài liệu hướng dẫn chi tiết
 │
-├── 🔑 rootCA.key               # Private Key của Root CA (Bảo mật tuyệt đối)
-├── 📜 rootCA.crt               # Chứng chỉ gốc (Trust Anchor cần cài vào Windows)
-├── 🔢 rootCA.srl               # Quản lý số Serial phát hành chứng chỉ
+├── rootCA.key                  # Private Key của Root CA (Bảo mật tuyệt đối)
+├── rootCA.crt                  # Chứng chỉ gốc (Trust Anchor cần cài vào Windows)
+├── rootCA.srl                  # Quản lý số Serial phát hành chứng chỉ
 │
-├── 🔑 localhost.key            # Private Key của HTTPS Server
-├── 📝 localhost.csr            # Yêu cầu ký chứng chỉ (Certificate Signing Request)
-├── 📜 localhost.crt            # Chứng chỉ số máy chủ (do Root CA ký)
+├── localhost.key               # Private Key của HTTPS Server
+├── localhost.csr               # Yêu cầu ký chứng chỉ (Certificate Signing Request)
+├── localhost.crt               # Chứng chỉ số máy chủ (do Root CA ký)
 │
-└── 📁 attacker/                # [MODULE NÂNG CAO] Kịch bản mô phỏng tấn công MitM
-    ├── 🐍 evil_server.py       # Server giả mạo lắng nghe cổng 8443 để bắt tài khoản
-    ├── 📄 fake_index.html      # Trang đăng nhập email mạo danh (giao diện xanh)
-    ├── ⚙️ fake_localhost.ext   # Cấu hình SAN cho chứng chỉ giả
-    ├── 📜 evilCA.crt / key     # Root CA mạo danh (Rogue CA)
-    └── 📜 fake_localhost.crt   # Chứng chỉ mạo danh ký bởi evilCA
+└── attacker/                   # [Module mở rộng] Kịch bản mô phỏng tấn công MitM
+    ├── evil_server.py          # Server giả mạo lắng nghe cổng 8443 để bắt tài khoản
+    ├── fake_index.html         # Trang đăng nhập email mạo danh (giao diện xanh)
+    ├── fake_localhost.ext      # Cấu hình SAN cho chứng chỉ giả
+    ├── generate_fake_certs.bat # Script tự động sinh cert giả của hacker
+    ├── evilCA.crt / key        # Root CA mạo danh (Rogue CA)
+    └── fake_localhost.crt      # Chứng chỉ mạo danh do evilCA ký
 ```
 
 > [!WARNING]
