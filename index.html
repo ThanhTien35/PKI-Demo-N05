@@ -1,0 +1,888 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PKI & Chain of Trust | Group N05</title>
+
+<style>
+:root {
+    --bg: #080f1e;
+    --panel: #111d30;
+    --border: #25364e;
+    --text: #e8f0fc;
+    --muted: #9aacc5;
+    --blue: #4da3ff;
+    --green: #35d6a0;
+    --yellow: #ffbd69;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 95px;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Arial, sans-serif;
+    line-height: 1.6;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.container {
+    max-width: 1120px;
+    margin: auto;
+    padding: 0 24px;
+}
+
+/* STICKY NAVBAR */
+
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(8, 15, 30, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 5px 25px rgba(0,0,0,0.18);
+}
+
+.nav-inner {
+    max-width: 1120px;
+    margin: auto;
+    padding: 17px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.logo {
+    font-size: 16px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.logo span {
+    color: var(--blue);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.nav-links a {
+    color: var(--muted);
+    font-size: 13px;
+    transition: color .2s;
+}
+
+.nav-links a:hover {
+    color: var(--blue);
+}
+
+/* HERO */
+
+.hero {
+    text-align: center;
+    padding: 95px 10px 70px;
+}
+
+.eyebrow {
+    color: var(--green);
+    letter-spacing: 3px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+h1 {
+    font-size: clamp(36px, 6vw, 62px);
+    line-height: 1.15;
+    margin: 20px 0;
+    letter-spacing: -2px;
+}
+
+h1 span {
+    color: var(--blue);
+}
+
+.subtitle {
+    max-width: 700px;
+    margin: auto;
+    color: var(--muted);
+    font-size: 16px;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+    padding: 12px 22px;
+    border: 1px solid #276b59;
+    background: #102b2b;
+    color: var(--green);
+    border-radius: 40px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    background: var(--green);
+    border-radius: 50%;
+}
+
+.hero-actions {
+    margin-top: 28px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.btn {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: .2s;
+}
+
+.btn:hover {
+    border-color: var(--blue);
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: var(--blue);
+    color: #061426;
+    border-color: var(--blue);
+}
+
+/* SECTIONS */
+
+.section-title {
+    font-size: 23px;
+    margin: 55px 0 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 27px;
+    transition: .2s;
+}
+
+.card:hover {
+    border-color: #42638b;
+    transform: translateY(-3px);
+}
+
+.card-icon {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.card h3 {
+    margin: 0 0 8px;
+    font-size: 17px;
+}
+
+.card p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.value {
+    color: var(--green);
+    font-weight: 700;
+    margin-top: 15px;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+/* CHAIN OF TRUST */
+
+.chain {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 42px 25px;
+    text-align: center;
+}
+
+.node {
+    max-width: 470px;
+    margin: auto;
+    border: 1px solid #355b85;
+    background: #152b47;
+    padding: 23px;
+    border-radius: 12px;
+}
+
+.node strong {
+    display: block;
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.node small {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.arrow {
+    font-size: 28px;
+    color: var(--blue);
+    margin: 12px 0;
+}
+
+.chain-label {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* VERIFICATION */
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.step {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 27px;
+}
+
+.step h3 {
+    margin-top: 0;
+    font-size: 17px;
+}
+
+.step p {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.warning {
+    color: var(--yellow) !important;
+}
+
+.success {
+    color: var(--green) !important;
+}
+
+/* TEAM */
+
+.members {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.member {
+    padding: 27px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--panel);
+    text-align: center;
+}
+
+.avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 15px;
+    background: #1a395a;
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0 auto 15px;
+}
+
+.member h3 {
+    font-size: 15px;
+    margin: 0 0 5px;
+}
+
+.member p {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0;
+}
+
+/* CERTIFICATE MODAL */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.75);
+    padding: 20px;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 650px;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: #111d30;
+    border: 1px solid #355070;
+    border-radius: 18px;
+    padding: 28px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 21px;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 27px;
+}
+
+.cert-row {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+}
+
+.cert-label {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.cert-value {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.fingerprint {
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    color: var(--green);
+    overflow-wrap: anywhere;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+}
+
+/* FOOTER */
+
+footer {
+    text-align: center;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding: 35px 15px;
+    margin-top: 70px;
+    font-size: 13px;
+}
+
+/* TABLET */
+
+@media (max-width: 900px) {
+    .grid, .members {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero {
+        padding: 70px 10px 50px;
+    }
+
+    .nav-links {
+        gap: 14px;
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .nav-inner {
+        padding: 14px 16px;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px 18px;
+    }
+
+    .nav-links a {
+        font-size: 12px;
+    }
+
+    html {
+        scroll-padding-top: 125px;
+    }
+
+    .hero {
+        padding: 55px 0 35px;
+    }
+
+    h1 {
+        letter-spacing: -1px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
+    .grid, .steps, .members {
+        grid-template-columns: 1fr;
+    }
+
+    .section-title {
+        font-size: 20px;
+        margin-top: 42px;
+    }
+
+    .card, .step {
+        padding: 22px;
+    }
+
+    .chain {
+        padding: 28px 14px;
+    }
+
+    .node {
+        padding: 17px 12px;
+    }
+
+    .node strong {
+        font-size: 14px;
+        overflow-wrap: anywhere;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+    }
+
+    .modal-content {
+        padding: 20px;
+    }
+
+    .modal-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .card, .btn { transition: none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- STICKY NAVIGATION -->
+<header class="navbar">
+    <nav class="nav-inner" aria-label="Main navigation">
+        <a class="logo" href="#home">
+            PKI <span>/ GROUP N05</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="#overview">Overview</a>
+            <a href="#chain">Chain of Trust</a>
+            <a href="#verification">Verification</a>
+            <a href="#team">Our Team</a>
+        </div>
+    </nav>
+</header>
+
+<div class="container">
+<main>
+
+<!-- HERO -->
+<section class="hero" id="home">
+    <div class="eyebrow">
+        INFORMATION SECURITY PROJECT
+    </div>
+
+    <h1>PKI & <span>Chain of Trust</span></h1>
+
+    <p class="subtitle">
+        Demonstration of Public Key Infrastructure,
+        HTTPS certificate validation and the
+        trusted Root Certificate Authority mechanism.
+    </p>
+
+    <div class="status">
+        <span class="dot"></span>
+        HTTPS DEMO SERVER
+    </div>
+
+    <div class="hero-actions">
+        <button class="btn btn-primary"
+                onclick="openCertificate()">
+            View Certificate
+        </button>
+
+        <a class="btn" href="#chain">
+            Explore Chain of Trust
+        </a>
+    </div>
+</section>
+
+<!-- OVERVIEW -->
+<section id="overview">
+<h2 class="section-title">01 / Connection Overview</h2>
+
+<div class="grid">
+    <div class="card">
+        <div class="card-icon">🔒</div>
+        <h3>HTTPS Connection</h3>
+        <p>
+            Secure communication between
+            the browser and local web server.
+        </p>
+        <div class="value">
+            https://localhost:8443
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">🛡️</div>
+        <h3>Certificate Authority</h3>
+        <p>
+            Private Root CA created with
+            OpenSSL and RSA 2048-bit keys.
+        </p>
+        <div class="value">
+            TDTU Group N05
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">📜</div>
+        <h3>Digital Certificate</h3>
+        <p>
+            X.509 certificate issued for
+            the localhost HTTPS server.
+        </p>
+        <div class="value">
+            localhost.crt
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- CHAIN OF TRUST -->
+<section id="chain">
+<h2 class="section-title">02 / Certificate Chain of Trust</h2>
+
+<div class="chain">
+    <div class="node">
+        <small>TRUST ANCHOR / ROOT CA</small>
+        <strong>TDTU Group N05 Private Root CA</strong>
+        <small>Self-signed Root Certificate</small>
+    </div>
+
+    <div class="arrow">↓</div>
+    <div class="chain-label">
+        Digital Signature Verification
+    </div>
+    <div class="arrow">↓</div>
+
+    <div class="node">
+        <small>LEAF CERTIFICATE</small>
+        <strong>localhost</strong>
+        <small>
+            DNS: localhost | IP: 127.0.0.1
+        </small>
+    </div>
+</div>
+</section>
+
+<!-- VERIFICATION -->
+<section id="verification">
+<h2 class="section-title">03 / Verification Process</h2>
+
+<div class="steps">
+    <div class="step">
+        <h3 class="warning">
+            01 — Untrusted State
+        </h3>
+        <p>
+            Before importing the Root CA,
+            the browser cannot establish
+            a trusted certificate chain.
+        </p>
+        <p class="warning">
+            NET::ERR_CERT_AUTHORITY_INVALID
+        </p>
+    </div>
+
+    <div class="step">
+        <h3 class="success">
+            02 — Trusted State
+        </h3>
+        <p>
+            After importing the Root CA
+            into the trusted certificate store,
+            the browser can validate the
+            localhost certificate.
+        </p>
+        <p class="success">
+            Certificate Validation Successful
+        </p>
+    </div>
+</div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+<h2 class="section-title">04 / Project Team</h2>
+
+<div class="members">
+    <div class="member">
+        <div class="avatar">TT</div>
+        <h3>Nguyễn Thanh Tiền</h3>
+        <p>Student ID: 524H0035</p>
+    </div>
+
+    <div class="member">
+        <div class="avatar">MD</div>
+        <h3>Nguyễn Minh Đăng</h3>
+        <p>Student ID: 524H0082</p>
+    </div>
+
+    <div class="member">
+        <div class="avatar">GH</div>
+        <h3>Trần Gia Huy</h3>
+        <p>Student ID: 524H0092</p>
+    </div>
+</div>
+</section>
+
+</main>
+
+<footer>
+    <p>TON DUC THANG UNIVERSITY</p>
+    <p>Information Security | Group N05</p>
+    <p>PKI & Chain of Trust Demonstration — 2026</p>
+</footer>
+</div>
+
+<!-- CERTIFICATE VIEWER MODAL -->
+<div class="modal" id="certModal"
+     role="dialog" aria-modal="true"
+     aria-labelledby="certTitle">
+
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="certTitle">Certificate Viewer</h2>
+            <button class="close-btn"
+                    aria-label="Close certificate viewer"
+                    onclick="closeCertificate()">
+                &times;
+            </button>
+        </div>
+
+        <div id="certDetails">
+            Loading certificate information...
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-primary"
+                    onclick="copyFingerprint()">
+                Copy Fingerprint
+            </button>
+
+            <a class="btn" href="/api/certificate/download"
+               download="localhost.crt">
+                Download Certificate
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+let certificateData = null;
+let previousFocus = null;
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(
+        /[&<>"']/g,
+        char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[char]
+    );
+}
+
+function certificateRow(label, value) {
+    return `
+        <div class="cert-row">
+            <span class="cert-label">
+                ${escapeHTML(label)}
+            </span>
+            <div class="cert-value">
+                ${escapeHTML(value || "Not available")}
+            </div>
+        </div>
+    `;
+}
+
+async function openCertificate() {
+    const modal = document.getElementById("certModal");
+    const details = document.getElementById("certDetails");
+
+    previousFocus = document.activeElement;
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+    modal.querySelector(".close-btn").focus();
+
+    details.textContent = "Loading certificate information...";
+
+    try {
+        const response = await fetch("/api/certificate", {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+
+        const data = await response.json();
+        certificateData = data;
+
+        const fields = [
+            ["Subject", data.subject],
+            ["Issuer", data.issuer],
+            ["Serial Number", data.serial_number],
+            ["Valid From", data.not_before],
+            ["Valid Until", data.not_after],
+            ["Signature Algorithm", data.signature_algorithm],
+            ["Subject Alternative Name", data.san],
+            ["SHA-256 Fingerprint", data.fingerprint_sha256]
+        ];
+
+        details.innerHTML = fields.map(
+            ([label, value]) => certificateRow(
+                label,
+                Array.isArray(value) ? value.join(", ") : value
+            )
+        ).join("");
+
+    } catch (error) {
+        certificateData = null;
+        details.textContent =
+            "Cannot load certificate information. " +
+            "Check that your Python server supports " +
+            "the /api/certificate endpoint.";
+    }
+}
+
+function closeCertificate() {
+    document.getElementById("certModal")
+        .classList.remove("active");
+
+    document.body.style.overflow = "";
+    previousFocus?.focus();
+}
+
+async function copyFingerprint() {
+    const fingerprint =
+        certificateData?.fingerprint_sha256;
+
+    if (!fingerprint) {
+        alert("Fingerprint is not available.");
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(fingerprint);
+        alert("SHA-256 fingerprint copied!");
+    } catch (error) {
+        alert("Unable to copy fingerprint.");
+    }
+}
+
+document.getElementById("certModal")
+    .addEventListener("click", function(event) {
+        if (event.target === this) {
+            closeCertificate();
+        }
+    });
+
+document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+        closeCertificate();
+    }
+});
+</script>
+
+</body>
+</html>

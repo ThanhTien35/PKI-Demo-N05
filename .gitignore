@@ -1,0 +1,23 @@
+
+# Private Keys - NEVER upload
+*.key
+
+# Generated Certificates
+*.crt
+*.csr
+*.srl
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Virtual Environment
+.venv/
+venv/
+
+# IDE
+.vscode/
+
+# System
+.DS_Store
+Thumbs.db
